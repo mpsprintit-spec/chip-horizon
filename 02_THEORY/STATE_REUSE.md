@@ -56,11 +56,58 @@ SRR = reusable computation / total computation
 
 SRR harus diukur.
 
+## Stateful Core
+
+Target minimum:
+
+S_(t+1) = F(S_t, X_t)
+
+Untuk STWF yang lebih lengkap:
+
+Psi_(t+1) = G(Psi_t, X_t, S_t)
+
+S_(t+1) = F(S_t, Psi_(t+1))
+
+Y_t = R(Psi_t, S_t)
+
+State dan wave field diperlakukan sebagai dua lapisan fisik yang saling berinteraksi.
+
+## Material independence
+
+Stateful Core tidak secara fundamental mengharuskan silikon.
+
+Material dipilih setelah operator dan kebutuhan fisiknya ditentukan:
+
+Computation -> State dynamics -> Physical mechanism -> Material -> Hardware
+
+Kandidat awal untuk investigasi:
+- magnonic/spin-wave systems: wave layer
+- photonic systems: wave/interference layer
+- memristive/resistive-switching materials: state layer
+- ferroelectric systems: state + nonlinear interaction
+- phase-change and magnetic state systems: persistent/state functions
+
+Tidak ada kandidat yang ditetapkan sebagai material final.
+
+## State contamination as computation
+
+Model fisik dapat menyimpang dari accumulator ideal:
+
+S_(t+1) = lambda S_t + w X_t + epsilon_t
+
+Dengan lambda terkontrol, dinamika ini dapat menjadi temporal filter:
+
+S_t = sum_k lambda^k X_(t-k)
+
+Dengan demikian lifetime/decay state dapat menjadi parameter komputasi.
+
 ## Target
 
-Bangun STWF Stateful Core dengan physical state, input, update, reuse, selective reset, dan readout.
+Bangun STWF Stateful Core dengan physical state, input, update, reuse, selective reset, readout, dan kandidat physical mechanisms.
 
 Workload awal:
 - running sum
 - temporal filter
 - recurrent matrix computation
+
+Lihat juga: 02_THEORY/MATERIAL_TO_OPERATOR_MAPPING.md.
