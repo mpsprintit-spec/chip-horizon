@@ -12,3 +12,7 @@
 - Mathematical model, noise model, energy model, dan test plan dicatat.
 - Rejected assumptions dan open problems dicatat.
 - Next research target ditetapkan: STWF Stateful Core.
+
+- Material-to-operator mapping ditambahkan: kandidat magnonik, fotonik, memristive/oxide, ferroelectric, phase-change, dan magnetic state dipetakan berdasarkan fungsi wave/state/nonlinearity.
+- Prinsip material-independent ditegaskan: operator dan dinamika state ditentukan sebelum pemilihan material.
+- Masalah representasi signed state, state contamination, decay sebagai fungsi temporal, dan kill test end-to-end dicatat.
