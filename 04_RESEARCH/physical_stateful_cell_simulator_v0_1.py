@@ -32,6 +32,7 @@ class Config:
     read_gain_state: float = 1.0
     read_gain_wave: float = 0.0
     read_noise_sigma: float = 0.0
+    read_backaction: float = 0.0
     delay_steps: int = 0
     reset_value: float = 0.0
     reset_energy: float = 1.0
@@ -62,6 +63,8 @@ def simulate(inputs: List[float], cfg: Config) -> dict:
         raise ValueError("wave_loss must be in [0, 1]")
     if cfg.delay_steps < 0:
         raise ValueError("delay_steps must be >= 0")
+    if not 0 <= cfg.read_backaction <= 1:
+        raise ValueError("read_backaction must be in [0, 1]")
 
     lam = math.exp(-cfg.dt / cfg.tau)
 
@@ -90,6 +93,9 @@ def simulate(inputs: List[float], cfg: Config) -> dict:
             + state_noise[i]
         )
         state[i + 1] = activation(raw_state, cfg)
+
+        # Finite read coupling is represented as a multiplicative back-action.
+        state[i + 1] *= 1.0 - cfg.read_backaction
 
         output[i] = (
             cfg.read_gain_state * state[i + 1]
@@ -135,19 +141,50 @@ def simulate(inputs: List[float], cfg: Config) -> dict:
     }
 
 
+def read_disturbance_experiment(inputs: List[float], cfg: Config) -> dict:
+    """Compare non-invasive and finite-backaction read trajectories."""
+    base_cfg = Config(**asdict(cfg))
+    base_cfg.read_backaction = 0.0
+    finite_cfg = Config(**asdict(cfg))
+
+    baseline = simulate(inputs, base_cfg)
+    with_read = simulate(inputs, finite_cfg)
+
+    base_state = np.asarray(baseline["state"], dtype=float)
+    read_state = np.asarray(with_read["state"], dtype=float)
+    disturbance = np.abs(read_state - base_state)
+
+    return {
+        "max_read_disturbance": float(np.max(disturbance)) if len(disturbance) else 0.0,
+        "mean_read_disturbance": float(np.mean(disturbance)) if len(disturbance) else 0.0,
+        "read_disturbance_ratio": (
+            float(np.max(disturbance))
+            / max(cfg.min_state_step, 1e-15)
+            if len(disturbance)
+            else 0.0
+        ),
+    }
+
+
 def reset_experiment(inputs: List[float], cfg: Config) -> dict:
     result = simulate(inputs, cfg)
     state_before = result["state"][-1]
-    residual = abs(cfg.reset_value)
+
+    # V0.1 models reset as an explicit state assignment. Physical reset time
+    # and energy remain configuration/measured parameters, not invented values.
+    reset_state = cfg.reset_value
+    residual = abs(reset_state)
+
     result["reset"] = {
         "state_before": state_before,
-        "reset_value": cfg.reset_value,
+        "reset_value": reset_state,
         "residual": residual,
         "residual_fraction_of_range": residual / max(
             result["state_range"], cfg.min_state_step
         ),
         "reset_energy": cfg.reset_energy,
     }
+    result["read_disturbance"] = read_disturbance_experiment(inputs, cfg)
     return result
 
 
@@ -161,6 +198,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tau-ns", type=float, default=10.0)
     parser.add_argument("--delay", type=int, default=0)
     parser.add_argument("--noise", type=float, default=0.0)
+    parser.add_argument("--read-backaction", type=float, default=0.0)
     parser.add_argument(
         "--nonlinearity",
         choices=("linear", "saturation", "tanh"),
@@ -179,6 +217,7 @@ def main() -> None:
         tau=args.tau_ns * 1e-9,
         delay_steps=args.delay,
         noise_sigma=args.noise,
+        read_backaction=args.read_backaction,
         nonlinearity=args.nonlinearity,
         seed=args.seed,
     )
@@ -210,6 +249,10 @@ def main() -> None:
     print(f"reset ratio         : {result['reset_ratio']:.6g}")
     print(f"stable              : {result['stable']}")
     print(f"reset residual      : {result['reset']['residual']:.6g}")
+    print(
+        "max read disturbance: "
+        f"{result['read_disturbance']['max_read_disturbance']:.6g}"
+    )
 
 
 if __name__ == "__main__":
