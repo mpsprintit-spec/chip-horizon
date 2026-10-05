@@ -3,112 +3,112 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>STWF Visual Laboratory v0.1</title>
+<title>STWF Visual Laboratory v0.2</title>
 <style>
-body{margin:0;background:#090d12;color:#dce7f2;font:14px system-ui,sans-serif}
-header{padding:14px 18px;border-bottom:1px solid #26313d}
-h1{font-size:18px;margin:0} small{opacity:.65}
-main{display:grid;grid-template-columns:1fr 300px;gap:10px;padding:10px}
-canvas{width:100%;height:auto;background:#05080b;border:1px solid #26313d;border-radius:8px}
+*{box-sizing:border-box}body{margin:0;background:#080c11;color:#dce7f2;font:14px system-ui,sans-serif}
+header{padding:13px 16px;border-bottom:1px solid #26313d}h1{font-size:18px;margin:0}small{opacity:.65}
+main{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:10px;padding:10px}
+canvas{width:100%;height:auto;background:#030609;border:1px solid #26313d;border-radius:8px}
 .panel{border:1px solid #26313d;border-radius:8px;padding:12px;background:#0d131a}
-label{display:block;margin:13px 0 5px}input[type=range]{width:100%}
-button{padding:9px 12px;margin:4px 3px 4px 0;background:#17212b;color:#dce7f2;border:1px solid #344453;border-radius:6px}
-.value{float:right;font-family:monospace}
-.stat{font-family:monospace;line-height:1.7;margin-top:12px}
+label{display:block;margin:11px 0 4px}.value{float:right;font-family:monospace}
+input[type=range]{width:100%}button{padding:9px 12px;margin:4px 3px 4px 0;background:#17212b;color:#dce7f2;border:1px solid #344453;border-radius:6px}
+.stat{font-family:monospace;line-height:1.65;margin-top:10px}.mode{font-weight:600;margin:8px 0}
 @media(max-width:800px){main{grid-template-columns:1fr}.panel{order:-1}}
 </style>
 </head>
 <body>
-<header><h1>STWF VISUAL LABORATORY <small>v0.1 — mathematical/visual model</small></h1></header>
+<header><h1>STWF VISUAL LABORATORY <small>v0.2 — wave / state / interference model</small></h1></header>
 <main>
-<section><canvas id="field" width="900" height="560"></canvas></section>
+<section><canvas id="field" width="960" height="620"></canvas></section>
 <section class="panel">
-<b>Controls</b>
-<label>Retention λ <span id="lv" class="value"></span></label>
-<input id="lambda" type="range" min="0" max="1" step=".001" value=".92">
-<label>Coupling <span id="cv" class="value"></span></label>
-<input id="coupling" type="range" min="0" max="1.5" step=".01" value=".75">
-<label>Phase difference <span id="pv" class="value"></span></label>
-<input id="phase" type="range" min="0" max="360" step="1" value="60">
-<label>Noise <span id="nv" class="value"></span></label>
-<input id="noise" type="range" min="0" max=".3" step=".001" value=".015">
-<label>Input pulse <span id="iv" class="value"></span></label>
-<input id="input" type="range" min="0" max="3" step=".01" value="1">
-<div>
-<button id="run">▶ RUN</button><button id="step">STEP</button><button id="reset">RESET</button>
-</div>
+<div class="mode">Experiment mode</div>
+<button id="modeWave">INTERFERENCE</button><button id="modeState">STATE</button>
+<label>Retention λ <span id="lv" class="value"></span></label><input id="lambda" type="range" min="0" max="1" step=".001" value=".92">
+<label>Coupling <span id="cv" class="value"></span></label><input id="coupling" type="range" min="0" max="1.5" step=".01" value=".75">
+<label>Phase B <span id="pv" class="value"></span></label><input id="phase" type="range" min="0" max="360" step="1" value="0">
+<label>Delay B <span id="dv" class="value"></span></label><input id="delay" type="range" min="0" max="80" step="1" value="0">
+<label>Nonlinearity / threshold <span id="tv" class="value"></span></label><input id="threshold" type="range" min="0" max="2" step=".01" value=".8">
+<label>Noise <span id="nv" class="value"></span></label><input id="noise" type="range" min="0" max=".25" step=".001" value=".01">
+<label>Input A <span id="av" class="value"></span></label><input id="ampA" type="range" min="0" max="1.5" step=".01" value="1">
+<label>Input B <span id="bv" class="value"></span></label><input id="ampB" type="range" min="0" max="1.5" step=".01" value="1">
+<div><button id="run">▶ RUN</button><button id="step">STEP</button><button id="reset">RESET</button></div>
 <div class="stat" id="stats"></div>
-<p><small>Visual meaning: node radius ≈ state amplitude; wave spacing/phase ≈ phase; fading ≈ retention/loss; links ≈ coupling. This is not a physical electromagnetic solver.</small></p>
+<p><small>Interference mode displays two waves and their resultant. State mode displays five coupled state cells. Delay, phase, retention, threshold and noise are mathematical parameters, not measured material properties.</small></p>
 </section>
 </main>
 <script>
-const c=document.getElementById('field'),x=c.getContext('2d');
-const els={lambda:lambda,coupling:coupling,phase:phase,noise:noise,input:input};
-let running=false,t=0,state=[0,0,0,0,0],last=performance.now();
-
-function val(k){return +els[k].value}
-function fmt(n){return Number(n).toFixed(3)}
-function noise(){return (Math.random()*2-1)*val('noise')}
+const c=document.getElementById('field'),ctx=c.getContext('2d');
+const E={lambda:document.getElementById('lambda'),coupling:document.getElementById('coupling'),phase:document.getElementById('phase'),delay:document.getElementById('delay'),threshold:document.getElementById('threshold'),noise:document.getElementById('noise'),ampA:document.getElementById('ampA'),ampB:document.getElementById('ampB')};
+let mode='wave',running=false,t=0,state=[0,0,0,0,0];
+const V=k=>+E[k].value, fmt=n=>Number(n).toFixed(3), rnd=()=>((Math.random()*2-1)*V('noise'));
 function reset(){state=[0,0,0,0,0];t=0;draw()}
+function wave(px,phase,delay,amp){return amp*Math.sin(px*.035-(t-delay)*.10+phase)}
 function update(){
-  const L=val('lambda'),K=val('coupling'),I=val('input'),p=val('phase')*Math.PI/180;
-  const old=state.slice(), center=2;
-  for(let i=0;i<5;i++){
-    let left=i?old[i-1]:0,right=i<4?old[i+1]:0;
-    let drive=(i===center)?I*Math.cos(t*.12):0;
-    let phaseTerm=(i===0?Math.cos(t*.12):i===4?Math.cos(t*.12+p):0);
-    state[i]=L*old[i]+K*(left+right)*.22+drive*.18+phaseTerm*.12+noise();
-  }
-  t++;
+ if(mode==='wave'){t++;return}
+ const L=V('lambda'),K=V('coupling'),T=V('threshold'),old=state.slice();
+ for(let i=0;i<5;i++){
+  const left=i?old[i-1]:0,right=i<4?old[i+1]:0;
+  let z=L*old[i]+K*.20*(left+right)+rnd();
+  if(i===2)z+=V('ampA')*.35;
+  state[i]=Math.max(-2,Math.min(2,z));
+  if(Math.abs(state[i])<T) state[i]*=.55;
+ }
+ t++;
 }
-function draw(){
-  const W=c.width,H=c.height; x.clearRect(0,0,W,H);
-  x.strokeStyle='#18222c';x.lineWidth=1;
-  for(let gx=0;gx<W;gx+=45){x.beginPath();x.moveTo(gx,0);x.lineTo(gx,H);x.stroke()}
-  for(let gy=0;gy<H;gy+=45){x.beginPath();x.moveTo(0,gy);x.lineTo(W,gy);x.stroke()}
-  const y=H*.54, gap=140, start=W/2-2*gap;
-  // waves
-  for(let k=0;k<5;k++){
-    x.beginPath();
-    for(let px=0;px<W;px+=3){
-      let yy=y-100-k*45+Math.sin(px*.045-t*.08+k)*18*(.3+Math.abs(state[k]));
-      if(px===0)x.moveTo(px,yy);else x.lineTo(px,yy)
-    }
-    x.strokeStyle='#7891a8';x.globalAlpha=.35;x.stroke();x.globalAlpha=1
-  }
-  // links
-  for(let i=0;i<4;i++){
-    let a=start+i*gap,b=a+gap;
-    x.strokeStyle='#536777';x.lineWidth=2;x.beginPath();x.moveTo(a,y);x.lineTo(b,y);x.stroke()
-    let pulse=(Math.sin(t*.12-i)+1)/2;
-    x.beginPath();x.arc(a+(b-a)*pulse,y,5,0,Math.PI*2);x.fillStyle='#dce7f2';x.fill()
-  }
-  // nodes
-  for(let i=0;i<5;i++){
-    const xx=start+i*gap, r=18+Math.min(45,Math.abs(state[i])*13);
-    x.beginPath();x.arc(xx,y,r,0,Math.PI*2);
-    x.strokeStyle='#a9bac9';x.lineWidth=2;x.stroke();
-    x.beginPath();x.arc(xx,y,r*.35,0,Math.PI*2);x.fillStyle='#dce7f2';x.fill();
-    x.fillStyle='#dce7f2';x.font='13px monospace';x.textAlign='center';
-    x.fillText('S'+(i+1)+' '+fmt(state[i]),xx,y+r+22);
-  }
-  x.textAlign='left';x.fillStyle='#dce7f2';x.font='16px system-ui';
-  x.fillText('WAVE / STATE FIELD',18,28);
-  x.font='12px monospace';x.fillText('t = '+t,18,48);
-  updateLabels();
+function line(points,stroke,width=2,alpha=1){
+ ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+ ctx.strokeStyle=stroke;ctx.globalAlpha=alpha;ctx.lineWidth=width;ctx.stroke();ctx.globalAlpha=1;
 }
-function updateLabels(){
-  lv.textContent=fmt(val('lambda'));cv.textContent=fmt(val('coupling'));
-  pv.textContent=val('phase')+'°';nv.textContent=fmt(val('noise'));iv.textContent=fmt(val('input'));
-  const mean=state.reduce((a,b)=>a+b,0)/state.length;
-  const max=Math.max(...state.map(Math.abs));
-  const tau=val('lambda')>0&&val('lambda')<1?-1/Math.log(val('lambda')):Infinity;
-  stats.innerHTML='time step: '+t+'<br>mean state: '+fmt(mean)+'<br>max |state|: '+fmt(max)+'<br>tau: '+(isFinite(tau)?fmt(tau)+' steps':'∞')+'<br>phase: '+val('phase')+'°';
+function drawWave(){
+ const W=c.width,H=c.height,mid=H*.45;
+ ctx.fillStyle='#dce7f2';ctx.font='16px system-ui';ctx.fillText('INTERFERENCE / SPACE-TIME WAVE FIELD',18,28);
+ ctx.font='12px monospace';ctx.fillText('t = '+t,18,48);
+ const p=V('phase')*Math.PI/180,d=V('delay'),A=V('ampA'),B=V('ampB');
+ let pa=[],pb=[],pr=[],energy=[];
+ for(let px=0;px<=W;px+=3){
+   const a=wave(px,0,0,A),b=wave(px,p,d,B),r=a+b;
+   pa.push([px,mid-105-a*75]);pb.push([px,mid+b*75]);pr.push([px,mid-r*75]);energy.push(r*r);
+ }
+ line(pa,'#8ca4b8',2,.75);line(pb,'#aab8c4',2,.75);line(pr,'#dce7f2',3,1);
+ ctx.fillText('A',20,mid-115);ctx.fillText('B',20,mid+95);ctx.fillText('A+B',20,mid+155);
+ const cx=W*.72,cy=H*.73;
+ ctx.strokeStyle='#344453';ctx.beginPath();ctx.moveTo(cx-190,cy);ctx.lineTo(cx+190,cy);ctx.stroke();
+ const maxE=Math.max(...energy,0.0001);
+ for(let i=0;i<energy.length;i+=3){
+   const xx=cx-190+(380*i/energy.length),hh=energy[i]/maxE*70;
+   ctx.beginPath();ctx.moveTo(xx,cy);ctx.lineTo(xx,cy-hh);ctx.strokeStyle='#a9bac9';ctx.stroke();
+ }
+ ctx.fillText('resultant intensity  ~ |A+B|²',cx-185,cy+25);
 }
-function frame(now){if(running)update();draw();requestAnimationFrame(frame)}
-run.onclick=()=>running=!running;
-step.onclick=()=>{update();draw()}
-reset.onclick=reset;
+function drawState(){
+ const W=c.width,H=c.height,y=H*.46,gap=155,start=W/2-2*gap;
+ ctx.fillStyle='#dce7f2';ctx.font='16px system-ui';ctx.fillText('STATEFUL CORE / COUPLED CELLS',18,28);
+ ctx.font='12px monospace';ctx.fillText('t = '+t,18,48);
+ for(let i=0;i<4;i++){const a=start+i*gap,b=a+gap;ctx.strokeStyle='#536777';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(a,y);ctx.lineTo(b,y);ctx.stroke();
+   const q=(Math.sin(t*.1-i)+1)/2;ctx.beginPath();ctx.arc(a+(b-a)*q,y,5,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();}
+ for(let i=0;i<5;i++){const xx=start+i*gap,r=22+Math.abs(state[i])*22;
+   ctx.beginPath();ctx.arc(xx,y,r,0,Math.PI*2);ctx.strokeStyle='#a9bac9';ctx.lineWidth=2;ctx.stroke();
+   ctx.beginPath();ctx.arc(xx,y,r*.30,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();
+   ctx.fillStyle='#dce7f2';ctx.font='13px monospace';ctx.textAlign='center';ctx.fillText('S'+(i+1)+' '+fmt(state[i]),xx,y+r+22);}
+ ctx.textAlign='left';
+}
+function labels(){
+ lv.textContent=fmt(V('lambda'));cv.textContent=fmt(V('coupling'));pv.textContent=V('phase')+'°';dv.textContent=V('delay');
+ tv.textContent=fmt(V('threshold'));nv.textContent=fmt(V('noise'));av.textContent=fmt(V('ampA'));bv.textContent=fmt(V('ampB'));
+ const tau=V('lambda')>0&&V('lambda')<1?-1/Math.log(V('lambda')):Infinity;
+ stats.innerHTML='mode: '+(mode==='wave'?'interference':'state')+'<br>time step: '+t+'<br>τ: '+(isFinite(tau)?fmt(tau)+' steps':'∞')+
+ '<br>phase B: '+V('phase')+'°<br>delay B: '+V('delay')+' steps';
+}
+function draw(){ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#030609';ctx.fillRect(0,0,c.width,c.height);
+ ctx.strokeStyle='#121b23';ctx.lineWidth=1;for(let gx=0;gx<c.width;gx+=48){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,c.height);ctx.stroke()}
+ for(let gy=0;gy<c.height;gy+=48){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(c.width,gy);ctx.stroke()}
+ mode==='wave'?drawWave():drawState();labels()}
+function frame(){if(running)update();draw();requestAnimationFrame(frame)}
+document.getElementById('modeWave').onclick=()=>{mode='wave';reset()}
+document.getElementById('modeState').onclick=()=>{mode='state';reset()}
+document.getElementById('run').onclick=()=>running=!running;
+document.getElementById('step').onclick=()=>{update();draw()};
+document.getElementById('reset').onclick=reset;
 requestAnimationFrame(frame);
 </script>
 </body>
