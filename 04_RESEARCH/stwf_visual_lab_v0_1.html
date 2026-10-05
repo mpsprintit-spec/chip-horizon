@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>STWF Visual Laboratory v0.1</title>
+<style>
+body{margin:0;background:#090d12;color:#dce7f2;font:14px system-ui,sans-serif}
+header{padding:14px 18px;border-bottom:1px solid #26313d}
+h1{font-size:18px;margin:0} small{opacity:.65}
+main{display:grid;grid-template-columns:1fr 300px;gap:10px;padding:10px}
+canvas{width:100%;height:auto;background:#05080b;border:1px solid #26313d;border-radius:8px}
+.panel{border:1px solid #26313d;border-radius:8px;padding:12px;background:#0d131a}
+label{display:block;margin:13px 0 5px}input[type=range]{width:100%}
+button{padding:9px 12px;margin:4px 3px 4px 0;background:#17212b;color:#dce7f2;border:1px solid #344453;border-radius:6px}
+.value{float:right;font-family:monospace}
+.stat{font-family:monospace;line-height:1.7;margin-top:12px}
+@media(max-width:800px){main{grid-template-columns:1fr}.panel{order:-1}}
+</style>
+</head>
+<body>
+<header><h1>STWF VISUAL LABORATORY <small>v0.1 — mathematical/visual model</small></h1></header>
+<main>
+<section><canvas id="field" width="900" height="560"></canvas></section>
+<section class="panel">
+<b>Controls</b>
+<label>Retention λ <span id="lv" class="value"></span></label>
+<input id="lambda" type="range" min="0" max="1" step=".001" value=".92">
+<label>Coupling <span id="cv" class="value"></span></label>
+<input id="coupling" type="range" min="0" max="1.5" step=".01" value=".75">
+<label>Phase difference <span id="pv" class="value"></span></label>
+<input id="phase" type="range" min="0" max="360" step="1" value="60">
+<label>Noise <span id="nv" class="value"></span></label>
+<input id="noise" type="range" min="0" max=".3" step=".001" value=".015">
+<label>Input pulse <span id="iv" class="value"></span></label>
+<input id="input" type="range" min="0" max="3" step=".01" value="1">
+<div>
+<button id="run">▶ RUN</button><button id="step">STEP</button><button id="reset">RESET</button>
+</div>
+<div class="stat" id="stats"></div>
+<p><small>Visual meaning: node radius ≈ state amplitude; wave spacing/phase ≈ phase; fading ≈ retention/loss; links ≈ coupling. This is not a physical electromagnetic solver.</small></p>
+</section>
+</main>
+<script>
+const c=document.getElementById('field'),x=c.getContext('2d');
+const els={lambda:lambda,coupling:coupling,phase:phase,noise:noise,input:input};
+let running=false,t=0,state=[0,0,0,0,0],last=performance.now();
+
+function val(k){return +els[k].value}
+function fmt(n){return Number(n).toFixed(3)}
+function noise(){return (Math.random()*2-1)*val('noise')}
+function reset(){state=[0,0,0,0,0];t=0;draw()}
+function update(){
+  const L=val('lambda'),K=val('coupling'),I=val('input'),p=val('phase')*Math.PI/180;
+  const old=state.slice(), center=2;
+  for(let i=0;i<5;i++){
+    let left=i?old[i-1]:0,right=i<4?old[i+1]:0;
+    let drive=(i===center)?I*Math.cos(t*.12):0;
+    let phaseTerm=(i===0?Math.cos(t*.12):i===4?Math.cos(t*.12+p):0);
+    state[i]=L*old[i]+K*(left+right)*.22+drive*.18+phaseTerm*.12+noise();
+  }
+  t++;
+}
+function draw(){
+  const W=c.width,H=c.height; x.clearRect(0,0,W,H);
+  x.strokeStyle='#18222c';x.lineWidth=1;
+  for(let gx=0;gx<W;gx+=45){x.beginPath();x.moveTo(gx,0);x.lineTo(gx,H);x.stroke()}
+  for(let gy=0;gy<H;gy+=45){x.beginPath();x.moveTo(0,gy);x.lineTo(W,gy);x.stroke()}
+  const y=H*.54, gap=140, start=W/2-2*gap;
+  // waves
+  for(let k=0;k<5;k++){
+    x.beginPath();
+    for(let px=0;px<W;px+=3){
+      let yy=y-100-k*45+Math.sin(px*.045-t*.08+k)*18*(.3+Math.abs(state[k]));
+      if(px===0)x.moveTo(px,yy);else x.lineTo(px,yy)
+    }
+    x.strokeStyle='#7891a8';x.globalAlpha=.35;x.stroke();x.globalAlpha=1
+  }
+  // links
+  for(let i=0;i<4;i++){
+    let a=start+i*gap,b=a+gap;
+    x.strokeStyle='#536777';x.lineWidth=2;x.beginPath();x.moveTo(a,y);x.lineTo(b,y);x.stroke()
+    let pulse=(Math.sin(t*.12-i)+1)/2;
+    x.beginPath();x.arc(a+(b-a)*pulse,y,5,0,Math.PI*2);x.fillStyle='#dce7f2';x.fill()
+  }
+  // nodes
+  for(let i=0;i<5;i++){
+    const xx=start+i*gap, r=18+Math.min(45,Math.abs(state[i])*13);
+    x.beginPath();x.arc(xx,y,r,0,Math.PI*2);
+    x.strokeStyle='#a9bac9';x.lineWidth=2;x.stroke();
+    x.beginPath();x.arc(xx,y,r*.35,0,Math.PI*2);x.fillStyle='#dce7f2';x.fill();
+    x.fillStyle='#dce7f2';x.font='13px monospace';x.textAlign='center';
+    x.fillText('S'+(i+1)+' '+fmt(state[i]),xx,y+r+22);
+  }
+  x.textAlign='left';x.fillStyle='#dce7f2';x.font='16px system-ui';
+  x.fillText('WAVE / STATE FIELD',18,28);
+  x.font='12px monospace';x.fillText('t = '+t,18,48);
+  updateLabels();
+}
+function updateLabels(){
+  lv.textContent=fmt(val('lambda'));cv.textContent=fmt(val('coupling'));
+  pv.textContent=val('phase')+'°';nv.textContent=fmt(val('noise'));iv.textContent=fmt(val('input'));
+  const mean=state.reduce((a,b)=>a+b,0)/state.length;
+  const max=Math.max(...state.map(Math.abs));
+  const tau=val('lambda')>0&&val('lambda')<1?-1/Math.log(val('lambda')):Infinity;
+  stats.innerHTML='time step: '+t+'<br>mean state: '+fmt(mean)+'<br>max |state|: '+fmt(max)+'<br>tau: '+(isFinite(tau)?fmt(tau)+' steps':'∞')+'<br>phase: '+val('phase')+'°';
+}
+function frame(now){if(running)update();draw();requestAnimationFrame(frame)}
+run.onclick=()=>running=!running;
+step.onclick=()=>{update();draw()}
+reset.onclick=reset;
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
