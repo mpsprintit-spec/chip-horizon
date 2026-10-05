@@ -3,26 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>STWF Visual Laboratory v0.3</title>
+<title>STWF Visual Laboratory v0.4</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#080c11;color:#dce7f2;font:14px system-ui,sans-serif}
-header{padding:13px 16px;border-bottom:1px solid #26313d}h1{font-size:18px;margin:0}small{opacity:.65}
-main{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:10px;padding:10px}
+header{padding:13px 16px;border-bottom:1px solid #26313d}h1{font-size:18px;margin:0}small{opacity:.68}
+main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:10px;padding:10px}
 canvas{width:100%;height:auto;background:#030609;border:1px solid #26313d;border-radius:8px}
 .panel{border:1px solid #26313d;border-radius:8px;padding:12px;background:#0d131a}
-label{display:block;margin:10px 0 4px}.value{float:right;font-family:monospace}
+label{display:block;margin:9px 0 4px}.value{float:right;font-family:monospace}
 input[type=range]{width:100%}button{padding:9px 12px;margin:4px 3px 4px 0;background:#17212b;color:#dce7f2;border:1px solid #344453;border-radius:6px}
 .stat{font-family:monospace;line-height:1.55;margin-top:10px}.mode{font-weight:600;margin:8px 0}
-.legend{font-size:12px;line-height:1.45;padding:8px;margin-top:8px;border:1px solid #26313d;border-radius:6px}
-@media(max-width:800px){main{grid-template-columns:1fr}.panel{order:-1}}
+.box{font-size:12px;line-height:1.5;padding:9px;margin-top:9px;border:1px solid #26313d;border-radius:6px}
+.pass{border-color:#78909c}.fail{border-color:#9b6b6b}
+@media(max-width:850px){main{grid-template-columns:1fr}.panel{order:-1}}
 </style>
 </head>
 <body>
-<header><h1>STWF VISUAL LABORATORY <small>v0.3 — resonance / state / feedback model</small></h1></header>
+<header><h1>STWF VISUAL LABORATORY <small>v0.4 — state representation / falsifiable web test</small></h1></header>
 <main>
 <section><canvas id="field" width="960" height="620"></canvas></section>
 <section class="panel">
-<div class="mode">Experiment mode</div>
+<div class="mode">Model mode</div>
 <button id="modeWave">INTERFERENCE</button><button id="modeState">STATE</button>
 <label>Retention λ <span id="lv" class="value"></span></label><input id="lambda" type="range" min="0" max="1" step=".001" value=".92">
 <label>Coupling <span id="cv" class="value"></span></label><input id="coupling" type="range" min="0" max="1.5" step=".01" value=".75">
@@ -34,152 +35,84 @@ input[type=range]{width:100%}button{padding:9px 12px;margin:4px 3px 4px 0;backgr
 <label>Noise <span id="nv" class="value"></span></label><input id="noise" type="range" min="0" max=".25" step=".001" value=".01">
 <label>Input A <span id="av" class="value"></span></label><input id="ampA" type="range" min="0" max="1.5" step=".01" value="1">
 <label>Input B <span id="bv" class="value"></span></label><input id="ampB" type="range" min="0" max="1.5" step=".01" value="1">
-<div><button id="run">▶ RUN</button><button id="step">STEP</button><button id="reset">RESET</button></div>
+<div><button id="run">▶ RUN</button><button id="step">STEP</button><button id="reset">RESET</button><button id="test">RUN COMPUTATION TEST</button></div>
 <div class="stat" id="stats"></div>
-<div class="legend">
-<b>Physical abstraction:</b><br>
-INPUT → WAVE FIELD → INTERFERENCE → STATE → FEEDBACK → WAVE FIELD
+<div class="box" id="testResult"><b>Web validation:</b><br>Belum dijalankan.</div>
+<div class="box">
+<b>Representation:</b><br>
+P = physical/abstract state → M(P) = numerical state S.
 <br><br>
-Resonance menyimpan sebagian energi/state. Feedback mengembalikan state ke medan pada langkah berikutnya. Threshold hanya model nonlinier sederhana.
+Target test: <code>S' = S + X</code> dengan X = [3, 5, 2, 7], S₀ = 0.
 </div>
-<p><small>Ini simulator matematis/visual, bukan solver elektromagnetik dan bukan hasil pengukuran material. Parameter bukan spesifikasi perangkat fisik.</small></p>
+<div class="box">
+<b>Physical abstraction:</b><br>
+INPUT → WAVE FIELD → INTERACTION → STATE → FEEDBACK → WAVE FIELD
+<br><br>
+Ini simulator matematis/visual. Ia tidak mengukur material dan tidak membuktikan perangkat fisik.
+</div>
 </section>
 </main>
 <script>
 const c=document.getElementById('field'),ctx=c.getContext('2d');
-const E={
- lambda:document.getElementById('lambda'),coupling:document.getElementById('coupling'),
- feedback:document.getElementById('feedback'),resonance:document.getElementById('resonance'),
- phase:document.getElementById('phase'),delay:document.getElementById('delay'),
- threshold:document.getElementById('threshold'),noise:document.getElementById('noise'),
- ampA:document.getElementById('ampA'),ampB:document.getElementById('ampB')
-};
+const E={lambda:lambda,coupling:coupling,feedback:feedback,resonance:resonance,phase:phase,delay:delay,threshold:threshold,noise:noise,ampA:ampA,ampB:ampB};
 let mode='wave',running=false,t=0,state=[0,0,0,0,0],fieldMemory=0,history=[];
-const V=k=>+E[k].value,fmt=n=>Number(n).toFixed(3);
-const rnd=()=>((Math.random()*2-1)*V('noise'));
-
-function reset(){state=[0,0,0,0,0];fieldMemory=0;history=[];t=0;draw()}
-function wave(px,phase,delay,amp,feedback=0){
- return amp*Math.sin(px*.035-(t-delay)*.10+phase)+feedback*Math.sin(px*.035-t*.10);
-}
-function nonlinear(x){
- const T=V('threshold');
- if(T<=0)return Math.tanh(x);
- return Math.abs(x)<T ? x*.55 : Math.tanh(x)*Math.min(1,T+0.4);
-}
+const V=k=>+E[k].value,fmt=n=>Number(n).toFixed(3),rnd=()=>((Math.random()*2-1)*V('noise'));
+function reset(){state=[0,0,0,0,0];fieldMemory=0;history=[];t=0;testResult.className='box';testResult.innerHTML='<b>Web validation:</b><br>Belum dijalankan.';draw()}
+function nonlinear(x){const T=V('threshold');if(T<=0)return Math.tanh(x);return Math.abs(x)<T?x*.55:Math.tanh(x)*Math.min(1,T+.4)}
 function update(){
- const L=V('lambda'),K=V('coupling'),F=V('feedback'),R=V('resonance'),T=V('threshold');
+ const L=V('lambda'),K=V('coupling'),F=V('feedback'),R=V('resonance');
  if(mode==='wave'){
-   const phase=V('phase')*Math.PI/180,d=V('delay');
-   const input=V('ampA')+V('ampB')*Math.cos(phase);
-   const interference=input+F*fieldMemory;
-   fieldMemory=L*fieldMemory+R*interference+rnd();
-   fieldMemory=Math.max(-2,Math.min(2,nonlinear(fieldMemory)));
-   history.push(fieldMemory);if(history.length>160)history.shift();
-   t++;return;
+  const ph=V('phase')*Math.PI/180,input=V('ampA')+V('ampB')*Math.cos(ph);
+  fieldMemory=L*fieldMemory+R*(input+F*fieldMemory)+rnd();
+  fieldMemory=Math.max(-2,Math.min(2,nonlinear(fieldMemory)));
+ }else{
+  const old=state.slice(),center=V('ampA')*.35+F*fieldMemory*.25;
+  for(let i=0;i<5;i++){const left=i?old[i-1]:0,right=i<4?old[i+1]:0;state[i]=Math.max(-2,Math.min(2,nonlinear(L*old[i]+K*.20*(left+right)+R*fieldMemory*.12+(i===2?center:0)+rnd())))}
+  fieldMemory=Math.max(-2,Math.min(2,L*fieldMemory+F*(state[2]+R*fieldMemory*.5)+rnd()));
  }
- const old=state.slice();
- const centerInput=V('ampA')*.35+F*fieldMemory*.25;
- for(let i=0;i<5;i++){
-   const left=i?old[i-1]:0,right=i<4?old[i+1]:0;
-   const local=L*old[i]+K*.20*(left+right)+rnd();
-   const resonant=R*fieldMemory*.12;
-   let z=local+resonant+(i===2?centerInput:0);
-   state[i]=Math.max(-2,Math.min(2,nonlinear(z)));
- }
- fieldMemory=L*fieldMemory+F*(state[2]+R*fieldMemory*.5)+rnd();
- fieldMemory=Math.max(-2,Math.min(2,fieldMemory));
- history.push(fieldMemory);if(history.length>160)history.shift();
- t++;
+ history.push(fieldMemory);if(history.length>160)history.shift();t++;
 }
-function line(points,stroke,width=2,alpha=1){
- ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
- ctx.strokeStyle=stroke;ctx.globalAlpha=alpha;ctx.lineWidth=width;ctx.stroke();ctx.globalAlpha=1;
+function runComputationTest(){
+ const X=[3,5,2,7],expected=[3,8,10,17],lambdaTest=1;
+ let S=0,actual=[],errors=[];
+ for(let i=0;i<X.length;i++){S=lambdaTest*S+X[i];actual.push(S);errors.push(S-expected[i])}
+ const rms=Math.sqrt(errors.reduce((a,b)=>a+b*b,0)/errors.length);
+ const pass=rms<1e-9;
+ testResult.className='box '+(pass?'pass':'fail');
+ testResult.innerHTML='<b>Web computation test: '+(pass?'PASS':'FAIL')+'</b><br>'+
+ 'Model: Sₙ₊₁ = λSₙ + Xₙ, λ = 1<br>'+
+ 'Expected: ['+expected.join(', ')+']<br>'+
+ 'Actual: ['+actual.join(', ')+']<br>'+
+ 'RMS error: '+rms.toExponential(3)+'<br>'+
+ '<small>This validates the numerical representation/test harness only; it is not a physical experiment.</small>';
 }
+function line(points,stroke,width=2,alpha=1){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.strokeStyle=stroke;ctx.globalAlpha=alpha;ctx.lineWidth=width;ctx.stroke();ctx.globalAlpha=1}
 function drawWave(){
- const W=c.width,H=c.height,mid=H*.36;
+ const W=c.width,H=c.height,mid=H*.36,p=V('phase')*Math.PI/180,d=V('delay'),A=V('ampA'),B=V('ampB'),fb=V('feedback')*fieldMemory;
  ctx.fillStyle='#dce7f2';ctx.font='16px system-ui';ctx.fillText('RESONANCE / SPACE-TIME WAVE FIELD',18,28);
  ctx.font='12px monospace';ctx.fillText('t = '+t,18,48);
- const p=V('phase')*Math.PI/180,d=V('delay'),A=V('ampA'),B=V('ampB'),fb=V('feedback')*fieldMemory;
  let pa=[],pb=[],pr=[],energy=[];
- for(let px=0;px<=W;px+=3){
-   const a=wave(px,0,0,A),b=wave(px,p,d,B),r=a+b+fb;
-   pa.push([px,mid-72-a*58]);pb.push([px,mid+b*58]);pr.push([px,mid-r*58]);energy.push(r*r);
- }
+ for(let px=0;px<=W;px+=3){const a=A*Math.sin(px*.035-t*.10),b=B*Math.sin(px*.035-(t-d)*.10+p),r=a+b+fb;pa.push([px,mid-72-a*58]);pb.push([px,mid+b*58]);pr.push([px,mid-r*58]);energy.push(r*r)}
  line(pa,'#8ca4b8',2,.7);line(pb,'#aab8c4',2,.7);line(pr,'#dce7f2',3,1);
  ctx.fillText('A',20,mid-82);ctx.fillText('B',20,mid+75);ctx.fillText('A+B+feedback',20,mid+125);
-
- const cx=W*.72,cy=H*.66,maxE=Math.max(...energy,.0001);
- ctx.strokeStyle='#344453';ctx.beginPath();ctx.moveTo(cx-190,cy);ctx.lineTo(cx+190,cy);ctx.stroke();
- for(let i=0;i<energy.length;i+=3){
-   const xx=cx-190+380*i/energy.length,hh=energy[i]/maxE*60;
-   ctx.beginPath();ctx.moveTo(xx,cy);ctx.lineTo(xx,cy-hh);ctx.strokeStyle='#a9bac9';ctx.stroke();
- }
+ const cx=W*.72,cy=H*.66,maxE=Math.max(...energy,.0001);ctx.strokeStyle='#344453';ctx.beginPath();ctx.moveTo(cx-190,cy);ctx.lineTo(cx+190,cy);ctx.stroke();
+ for(let i=0;i<energy.length;i+=3){const xx=cx-190+380*i/energy.length,hh=energy[i]/maxE*60;ctx.beginPath();ctx.moveTo(xx,cy);ctx.lineTo(xx,cy-hh);ctx.strokeStyle='#a9bac9';ctx.stroke()}
  ctx.fillText('resultant intensity  ~ |A+B+feedback|²',cx-185,cy+22);
-
- const rx=W*.28,ry=H*.72,rr=28+Math.abs(fieldMemory)*18;
- ctx.beginPath();ctx.arc(rx,ry,rr,0,Math.PI*2);ctx.strokeStyle='#dce7f2';ctx.lineWidth=2;ctx.stroke();
- ctx.beginPath();ctx.arc(rx,ry,rr*.42,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();
- ctx.font='12px monospace';ctx.textAlign='center';ctx.fillText('STATE',rx,ry+rr+18);
- ctx.fillText('memory '+fmt(fieldMemory),rx,ry+rr+34);
- ctx.textAlign='left';
-
- ctx.beginPath();ctx.moveTo(rx+rr,ry);ctx.bezierCurveTo(rx+150,ry-70,W-120,mid+80,W-40,mid);
- ctx.strokeStyle='#7f95a8';ctx.setLineDash([7,7]);ctx.stroke();ctx.setLineDash([]);
-}
+ const rx=W*.28,ry=H*.72,rr=28+Math.abs(fieldMemory)*18;ctx.beginPath();ctx.arc(rx,ry,rr,0,Math.PI*2);ctx.strokeStyle='#dce7f2';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(rx,ry,rr*.42,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();ctx.font='12px monospace';ctx.textAlign='center';ctx.fillText('STATE',rx,ry+rr+18);ctx.fillText('memory '+fmt(fieldMemory),rx,ry+rr+34);ctx.textAlign='left'}
 function drawState(){
  const W=c.width,H=c.height,y=H*.43,gap=155,start=W/2-2*gap;
- ctx.fillStyle='#dce7f2';ctx.font='16px system-ui';ctx.fillText('STATEFUL CORE / RESONANT FEEDBACK',18,28);
- ctx.font='12px monospace';ctx.fillText('t = '+t+'   fieldMemory = '+fmt(fieldMemory),18,48);
-
- for(let i=0;i<4;i++){
-   const a=start+i*gap,b=a+gap;
-   ctx.strokeStyle='#536777';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(a,y);ctx.lineTo(b,y);ctx.stroke();
-   const q=(Math.sin(t*.1-i)+1)/2;
-   ctx.beginPath();ctx.arc(a+(b-a)*q,y,5,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();
- }
- for(let i=0;i<5;i++){
-   const xx=start+i*gap,r=22+Math.abs(state[i])*22;
-   ctx.beginPath();ctx.arc(xx,y,r,0,Math.PI*2);ctx.strokeStyle='#a9bac9';ctx.lineWidth=2;ctx.stroke();
-   ctx.beginPath();ctx.arc(xx,y,r*.30,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();
-   ctx.fillStyle='#dce7f2';ctx.font='13px monospace';ctx.textAlign='center';
-   ctx.fillText('S'+(i+1)+' '+fmt(state[i]),xx,y+r+22);
- }
- ctx.textAlign='left';
-
- const fx=W/2,fy=H*.72,fr=25+Math.abs(fieldMemory)*16;
- ctx.beginPath();ctx.arc(fx,fy,fr,0,Math.PI*2);ctx.strokeStyle='#dce7f2';ctx.stroke();
- ctx.beginPath();ctx.arc(fx,fy,fr*.38,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();
- ctx.textAlign='center';ctx.fillStyle='#dce7f2';ctx.fillText('FIELD STATE '+fmt(fieldMemory),fx,fy+fr+20);
- ctx.textAlign='left';
-
- ctx.beginPath();ctx.moveTo(fx,fy-fr);ctx.bezierCurveTo(fx,fy-120,fx+220,fy-110,fx+260,y);
- ctx.strokeStyle='#7f95a8';ctx.setLineDash([7,7]);ctx.stroke();ctx.setLineDash([]);
- ctx.fillText('feedback path',fx+110,fy-100);
-}
+ ctx.fillStyle='#dce7f2';ctx.font='16px system-ui';ctx.fillText('STATEFUL CORE / RESONANT FEEDBACK',18,28);ctx.font='12px monospace';ctx.fillText('t = '+t+'   fieldMemory = '+fmt(fieldMemory),18,48);
+ for(let i=0;i<4;i++){const a=start+i*gap,b=a+gap;ctx.strokeStyle='#536777';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(a,y);ctx.lineTo(b,y);ctx.stroke()}
+ for(let i=0;i<5;i++){const xx=start+i*gap,r=22+Math.abs(state[i])*22;ctx.beginPath();ctx.arc(xx,y,r,0,Math.PI*2);ctx.strokeStyle='#a9bac9';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(xx,y,r*.30,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();ctx.fillStyle='#dce7f2';ctx.font='13px monospace';ctx.textAlign='center';ctx.fillText('S'+(i+1)+' '+fmt(state[i]),xx,y+r+22)}
+ const fx=W/2,fy=H*.72,fr=25+Math.abs(fieldMemory)*16;ctx.beginPath();ctx.arc(fx,fy,fr,0,Math.PI*2);ctx.strokeStyle='#dce7f2';ctx.stroke();ctx.beginPath();ctx.arc(fx,fy,fr*.38,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();ctx.fillStyle='#dce7f2';ctx.textAlign='center';ctx.fillText('FIELD STATE '+fmt(fieldMemory),fx,fy+fr+20);ctx.textAlign='left'}
 function labels(){
- lv.textContent=fmt(V('lambda'));cv.textContent=fmt(V('coupling'));fv.textContent=fmt(V('feedback'));
- rv.textContent=fmt(V('resonance'));pv.textContent=V('phase')+'°';dv.textContent=V('delay');
- tv.textContent=fmt(V('threshold'));nv.textContent=fmt(V('noise'));av.textContent=fmt(V('ampA'));bv.textContent=fmt(V('ampB'));
+ lv.textContent=fmt(V('lambda'));cv.textContent=fmt(V('coupling'));fv.textContent=fmt(V('feedback'));rv.textContent=fmt(V('resonance'));pv.textContent=V('phase')+'°';dv.textContent=V('delay');tv.textContent=fmt(V('threshold'));nv.textContent=fmt(V('noise'));av.textContent=fmt(V('ampA'));bv.textContent=fmt(V('ampB'));
  const tau=V('lambda')>0&&V('lambda')<1?-1/Math.log(V('lambda')):Infinity;
- stats.innerHTML='mode: '+(mode==='wave'?'resonance':'state')+'<br>time step: '+t+
- '<br>state memory: '+fmt(fieldMemory)+'<br>τ: '+(isFinite(tau)?fmt(tau)+' steps':'∞')+
- '<br>feedback: '+fmt(V('feedback'))+'<br>resonance: '+fmt(V('resonance'));
+ stats.innerHTML='mode: '+mode+'<br>time step: '+t+'<br>state memory: '+fmt(fieldMemory)+'<br>τ: '+(isFinite(tau)?fmt(tau)+' steps':'∞')+'<br>feedback: '+fmt(V('feedback'))+'<br>resonance: '+fmt(V('resonance'));
 }
-function draw(){
- ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#030609';ctx.fillRect(0,0,c.width,c.height);
- ctx.strokeStyle='#121b23';ctx.lineWidth=1;
- for(let gx=0;gx<c.width;gx+=48){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,c.height);ctx.stroke()}
- for(let gy=0;gy<c.height;gy+=48){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(c.width,gy);ctx.stroke()}
- mode==='wave'?drawWave():drawState();labels();
-}
+function draw(){ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#030609';ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle='#121b23';ctx.lineWidth=1;for(let x=0;x<c.width;x+=48){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke()}for(let y=0;y<c.height;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke()}mode==='wave'?drawWave():drawState();labels()}
 function frame(){if(running)update();draw();requestAnimationFrame(frame)}
-document.getElementById('modeWave').onclick=()=>{mode='wave';reset()}
-document.getElementById('modeState').onclick=()=>{mode='state';reset()}
-document.getElementById('run').onclick=()=>running=!running;
-document.getElementById('step').onclick=()=>{update();draw()};
-document.getElementById('reset').onclick=reset;
-requestAnimationFrame(frame);
+modeWave.onclick=()=>{mode='wave';reset()};modeState.onclick=()=>{mode='state';reset()};run.onclick=()=>running=!running;step.onclick=()=>{update();draw()};reset.onclick=reset;test.onclick=runComputationTest;requestAnimationFrame(frame);
 </script>
 </body>
 </html>
