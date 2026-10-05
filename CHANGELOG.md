@@ -1,3 +1,14 @@
+
+## 2026-10-05 — Physical Stateful Cell
+
+- Physical Stateful Cell Model diperdalam menjadi simulator V0.1 yang memisahkan **state decay**, **physical coupling**, **wave coupling**, **delay**, **loss**, **noise**, **read disturbance**, **reset**, dan **energy accounting**.
+- Retention sekarang dipisahkan dari coupling melalui bentuk S_(n+1)=f(C D_lambda S_n + B X_n + K_W W_n + epsilon_n), sehingga retention tidak dihitung dua kali pada transition matrix.
+- Ditambahkan simulator dependency-light Python: 04_RESEARCH/physical_stateful_cell_simulator_v0_1.py.
+- Ditambahkan spesifikasi eksperimen numerik: free decay, single update, repeated update, retention sweep, delay sweep, noise sweep, read disturbance, reset, dan nonlinearity sweep.
+- Initial engineering screening thresholds ditetapkan sebagai **screening values**, bukan hukum fisika atau hasil eksperimen.
+- Literatur 2025–2026 menunjukkan memory, nonlinearity, dan wave/photonic dynamics sudah memiliki demonstrasi fisik; karena itu Horizon tidak mengklaim mekanisme tersebut sebagai novelty tersendiri. Fokus novelty tetap pada formulasi computational cell dan pembuktian trade-off terukur.
+- Status: mathematical simulator / proposed synthesis; **belum ada hasil eksperimen hardware**.
+
 # CHANGELOG
 
 ## 2026-10-05
