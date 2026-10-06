@@ -53,3 +53,14 @@ Horizon's primary target is a scalable supercomputer architecture whose computat
 **Rationale:** the project target is a general scalable computing substrate, not merely a small experimental optical circuit or a laboratory accelerator. The smallest implementation must remain a legitimate reduced instance of the same architecture.
 
 **Status:** Accepted, 6 October 2026.
+
+
+### D-014 — Operational computational data path before physical implementation
+
+The project will define the complete computational data path from external input representation through encoding, wave evolution, nonlinear/state interaction, feedback, readout, and external output before selecting a final physical implementation.
+
+**Rule:** distinguish the system-level data representation from the physical representation used inside the WCR. A numerical example such as 5 + 3 = 8 is a computational contract/verification case, not evidence of a fabricated physical implementation.
+
+**Rationale:** ambiguity about what physically enters the chip, what physically changes during computation, and what is measured at the output can cause architectural concepts to be mistaken for communication paths or for already-proven computation. The data-path specification establishes the causal boundary that later physical experiments must demonstrate.
+
+**Status:** Accepted, 6 October 2026.
