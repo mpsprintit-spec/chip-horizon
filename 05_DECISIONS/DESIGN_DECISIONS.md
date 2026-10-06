@@ -29,3 +29,14 @@ The web laboratory must separate fixed reference truth from runtime-computed res
 **Rationale:** A testing interface is itself part of the verification chain. If the test harness cannot be independently inspected, a PASS can be circular. The web layer is therefore treated as a verification instrument for the mathematical model, not as evidence of physical behavior.
 
 **Status:** Accepted, 6 October 2026.
+
+
+### D-012 — External Test Infrastructure First
+
+Horizon will not develop custom laboratory instruments or a custom web test system as part of the core project when suitable external methods, commercial instruments, or established research facilities already exist. Testing infrastructure is treated as external research infrastructure.
+
+**Rule:** first identify the minimum physical observables required by the falsifiable experiment, then locate an existing measurement method/instrument/facility capable of measuring them. A custom fixture or instrument may be considered only when no suitable existing method is available and the missing interface is necessary to execute the experiment.
+
+**Rationale:** The research objective is the Horizon computational mechanism, not the construction of a parallel instrumentation project. Test infrastructure must remain subordinate to the device-under-test and must not become a second primary engineering program.
+
+**Status:** Accepted, 6 October 2026.
