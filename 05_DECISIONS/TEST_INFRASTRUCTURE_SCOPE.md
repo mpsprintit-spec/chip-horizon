@@ -121,8 +121,35 @@ The exact instruments depend on which physical medium survives the material and 
 - **Unresolved:** final physical medium, material stack, coupling method, detector architecture, and laboratory instrumentation.
 - **Not yet demonstrated:** any claim that the proposed STWF Stateful Core outperforms conventional electronics.
 
-## 6. Design constraint
+## 6. External infrastructure first
 
-Do not optimize the laboratory before the computational cell is physically defined.
+The default assumption is that testing will use instruments, measurement methods, and research facilities that already exist outside the Horizon project.
 
-The test environment should evolve from the minimum falsifiable experiment rather than become a second large engineering project.
+The workflow is:
+
+1. define the falsifiable claim;
+2. define the minimum observables;
+3. identify established measurement methods for those observables;
+4. identify existing commercial instruments or research facilities that provide those methods;
+5. design only the minimum DUT interface/fixture needed to connect the Horizon cell to that infrastructure;
+6. acquire and analyze the measurements.
+
+Custom instrumentation is a last resort. It is justified only when no suitable existing method or instrument can measure a required observable and the missing capability is essential to the experiment.
+
+## 7. Scope boundary
+
+The following are explicitly **outside the Horizon core project** unless a specific research requirement forces reconsideration:
+
+- custom oscilloscope development;
+- custom signal-generator development;
+- custom detector development when a suitable detector exists;
+- custom power/energy measurement systems when standard instruments exist;
+- custom calibration systems;
+- a dedicated Horizon measurement laboratory;
+- a browser-based test laboratory intended to substitute for physical instrumentation.
+
+The existing browser laboratory remains a software verification and visualization tool only.
+
+## 8. Design constraint
+
+Do not optimize or expand test infrastructure before the computational cell and its minimum observables are physically defined. The test environment must remain subordinate to the device-under-test and must not become a second large engineering project.
