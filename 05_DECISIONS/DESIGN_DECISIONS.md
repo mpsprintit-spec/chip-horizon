@@ -20,3 +20,12 @@ D-008 — Stateful Core dikerjakan sebelum skala chip besar karena pertanyaan ku
 D-009 — Chip, test fixture, dan test/measurement system dipisahkan sebagai tiga lapisan berbeda agar validasi tidak berubah menjadi scope creep arsitektur chip.
 
 D-010 — Test infrastructure dirancang dari minimum falsifiable experiment; laboratorium lengkap tidak dirancang sebelum computational cell dan physical observables ditetapkan.
+
+
+### D-011 — Validation UI must be independently auditable
+
+The web laboratory must separate fixed reference truth from runtime-computed results. A test must not derive both expected and actual values from the same runtime implementation and then treat agreement as independent validation. Visual elements that represent information flow should also make state transport observable rather than relying only on static node values.
+
+**Rationale:** A testing interface is itself part of the verification chain. If the test harness cannot be independently inspected, a PASS can be circular. The web layer is therefore treated as a verification instrument for the mathematical model, not as evidence of physical behavior.
+
+**Status:** Accepted, 6 October 2026.
