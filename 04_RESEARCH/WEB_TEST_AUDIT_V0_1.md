@@ -96,3 +96,12 @@ The general principle is **verification before validation**: first verify that t
 - **Verified correction:** v0.5 fixed-reference computation trace and visible transport layer.
 - **Mathematical:** S_(n+1)=λS_n+X_n.
 - **Not demonstrated:** physical computation, material behavior, device performance, speed, energy advantage.
+
+
+## v0.7 pause-control correction — 2026-10-06
+
+Manual inspection exposed another verification-interface issue: the visual transport markers were driven by wall-clock `performance.now()`, so they could move while the computational simulation was paused. That makes the display ambiguous: a reviewer cannot tell whether observed motion represents simulation progress or merely UI animation.
+
+The v0.7 correction makes transport-marker phase depend on simulation time `t` and therefore stops it when RUN is not active. STEP advances one simulation update. RUN/PAUSE explicitly controls continuous simulation. The button label also reflects the current state.
+
+This is an interface-verification correction, not a physical-model result.
