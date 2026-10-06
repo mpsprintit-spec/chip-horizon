@@ -25,6 +25,13 @@
 - Updated TEST_INFRASTRUCTURE_SCOPE.md to make the workflow: falsifiable claim → minimum observables → existing measurement method → existing instrument/facility → minimal DUT interface → measurement data.
 - The browser laboratory remains a software verification/visualization tool and is not treated as physical test infrastructure.
 
+## 2026-10-06 — Existing test infrastructure registry
+
+- Added 04_RESEARCH/EXISTING_TEST_INFRASTRUCTURE_REGISTRY_V0_1.md.
+- Mapped the minimum Stateful Core observables to established measurement classes such as oscilloscope/digitizer, SMU/semiconductor parameter analyzer, LCR/impedance measurement, optical power/photodetection, spectroscopy, and phase/frequency-domain measurements.
+- Recorded publicly documented candidate facilities at UI and ITS as external infrastructure candidates; access, cost, scheduling, sample requirements, and measurement uncertainty remain unresolved and must be confirmed directly.
+- No facility listing is treated as evidence of a Horizon experiment or as a commitment to a final physical platform.
+
 # CHANGELOG
 
 ## 2026-10-05
