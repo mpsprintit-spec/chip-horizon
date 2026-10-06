@@ -1,3 +1,12 @@
+## 2026-10-06 — Minimum WCR causal experiment
+
+- Added `04_RESEARCH/MINIMUM_WCR_CAUSAL_EXPERIMENT_V0_1.md`.
+- Defined the smallest falsifiable causal claim for a stateful WCR: controlled wave input changes physical state, state persists, and the same later input produces a measurably different response.
+- Defined E0-E8 validation stages covering instrument baseline, propagation, coupling/interference, nonlinearity, state update, retention, causal state-dependent response, repeatability, and energy/latency accounting.
+- Added control conditions and an independence requirement to prevent circular validation.
+- Explicitly separated WCR-mechanism validation from claims about universal computation, speed, energy advantage, manufacturability, smartphone integration, or supercomputer scaling.
+- Mapped the experiment to existing external measurement classes rather than proposing a custom Horizon laboratory.
+
 ## 2026-10-06 — Operational computational data path
 
 - Added `03_ARCHITECTURE/STWF/OPERATIONAL_DATA_PATH_V0_1.md`.
