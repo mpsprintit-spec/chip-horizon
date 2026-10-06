@@ -57,3 +57,14 @@
 - Material-to-operator mapping ditambahkan: kandidat magnonik, fotonik, memristive/oxide, ferroelectric, phase-change, dan magnetic state dipetakan berdasarkan fungsi wave/state/nonlinearity.
 - Prinsip material-independent ditegaskan: operator dan dinamika state ditentukan sebelum pemilihan material.
 - Masalah representasi signed state, state contamination, decay sebagai fungsi temporal, dan kill test end-to-end dicatat.
+
+
+## 2026-10-06 — Web validation audit correction
+
+- Audited STWF Visual Laboratory v0.4 after manual browser inspection.
+- Identified two verification weaknesses: static STATE-node visualization and circular expected-vs-actual computation.
+- Updated web laboratory to v0.5.
+- Added visible moving transport markers in STATE mode.
+- Changed computation validation to use a fixed reference trajectory and a runtime trace with per-step error, RMS error, and maximum absolute error.
+- Recorded the audit in 04_RESEARCH/WEB_TEST_AUDIT_V0_1.md.
+- Clarified that web PASS verifies the numerical harness only and does not validate physical hardware.
