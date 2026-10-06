@@ -19,7 +19,7 @@ input[type=range]{width:100%}button{padding:9px 12px;margin:4px 3px 4px 0;backgr
 </style>
 </head>
 <body>
-<header><h1>STWF VISUAL LABORATORY <small>v0.7 — auditable state / controlled motion / verification suite</small></h1></header>
+<header><h1>STWF VISUAL LABORATORY <small>v0.8 — functional controls / controlled motion / verification suite</small></h1></header>
 <main>
 <section><canvas id="field" width="960" height="620"></canvas></section>
 <section class="panel">
@@ -152,7 +152,7 @@ function labels(){
 }
 function draw(){ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#030609';ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle='#121b23';ctx.lineWidth=1;for(let x=0;x<c.width;x+=48){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke()}for(let y=0;y<c.height;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke()}mode==='wave'?drawWave():drawState();labels()}
 function frame(){if(running)update();draw();requestAnimationFrame(frame)}
-modeWave.onclick=()=>{mode='wave';reset()};modeState.onclick=()=>{mode='state';reset()};run.onclick=()=>{running=!running;run.textContent=running?'⏸ PAUSE':'▶ RUN';draw()};step.onclick=()=>{if(!running){update();draw()}};reset.onclick=reset;test.onclick=runComputationTest;suite.onclick=runAuditSuite;export.onclick=exportTrace;requestAnimationFrame(frame);
+modeWave.onclick=()=>{mode='wave';reset()};modeState.onclick=()=>{mode='state';reset()};run.onclick=()=>{running=!running;run.textContent=running?'⏸ PAUSE':'▶ RUN';draw()};step.onclick=()=>{if(!running){update();draw()}};reset.onclick=reset;test.onclick=runComputationTest;suite.onclick=runAuditSuite;const exportBtn=document.getElementById('export');exportBtn.onclick=exportTrace;requestAnimationFrame(frame);
 </script>
 </body>
 </html>
