@@ -18,6 +18,13 @@
 - Status web: runnable validation layer, dengan mathematical computation test terintegrasi.
 - Commit: 28ce71ed1e6c7769d6e79c34807d80e818fb10b0.
 
+## 2026-10-06 — External test infrastructure boundary
+
+- Accepted D-012: Horizon should use existing external measurement methods, commercial instruments, and established research facilities whenever suitable infrastructure already exists.
+- Custom instrumentation, custom calibration systems, dedicated Horizon laboratories, and a browser-based physical test substitute are explicitly out of core scope by default.
+- Updated TEST_INFRASTRUCTURE_SCOPE.md to make the workflow: falsifiable claim → minimum observables → existing measurement method → existing instrument/facility → minimal DUT interface → measurement data.
+- The browser laboratory remains a software verification/visualization tool and is not treated as physical test infrastructure.
+
 # CHANGELOG
 
 ## 2026-10-05
