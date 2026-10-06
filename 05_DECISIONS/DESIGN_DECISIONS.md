@@ -40,3 +40,16 @@ Horizon will not develop custom laboratory instruments or a custom web test syst
 **Rationale:** The research objective is the Horizon computational mechanism, not the construction of a parallel instrumentation project. Test infrastructure must remain subordinate to the device-under-test and must not become a second primary engineering program.
 
 **Status:** Accepted, 6 October 2026.
+
+
+### D-013 — Scalable target: one wave architecture from mobile chip to supercomputer
+
+Horizon's primary target is a scalable supercomputer architecture whose computational mechanism can also be instantiated at smartphone-chip scale. The architecture is not split into a separate mobile design and a separate supercomputer design.
+
+**Terminology:** Wave Computational Region (WCR) is the preferred architectural term for a physical region in which the wave field evolves and interacts with nonlinear/state elements. Earlier WCC terminology remains valid for the mathematical/conceptual unit and historical documents, but does not imply a transistor-like physical cell.
+
+**Rule:** scaling should primarily change the number, size, state capacity, bandwidth, locality, hierarchy, and interconnection of regions while preserving the underlying computational mechanism.
+
+**Rationale:** the project target is a general scalable computing substrate, not merely a small experimental optical circuit or a laboratory accelerator. The smallest implementation must remain a legitimate reduced instance of the same architecture.
+
+**Status:** Accepted, 6 October 2026.
