@@ -105,3 +105,12 @@ Manual inspection exposed another verification-interface issue: the visual trans
 The v0.7 correction makes transport-marker phase depend on simulation time `t` and therefore stops it when RUN is not active. STEP advances one simulation update. RUN/PAUSE explicitly controls continuous simulation. The button label also reflects the current state.
 
 This is an interface-verification correction, not a physical-model result.
+
+
+## v0.8 functional-control correction — 2026-10-06
+
+Manual browser inspection found a JavaScript syntax failure introduced in v0.6/v0.7: the element id `export` was referenced as the identifier `export`. In a classic browser script, `export` is a reserved keyword, so the script could fail before event handlers and the animation frame loop were installed. The visible HTML controls could therefore exist while RUN/STEP/RESET did not respond and the canvas visualization did not render.
+
+Correction: the export control is now referenced explicitly as `exportBtn = document.getElementById('export')`. Version v0.8 therefore restores the JavaScript execution path before further visual or numerical validation.
+
+This is a software defect in the test instrument, not evidence about STWF physics.
