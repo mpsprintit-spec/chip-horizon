@@ -19,7 +19,7 @@ input[type=range]{width:100%}button{padding:9px 12px;margin:4px 3px 4px 0;backgr
 </style>
 </head>
 <body>
-<header><h1>STWF VISUAL LABORATORY <small>v0.6 — auditable state / motion / verification suite</small></h1></header>
+<header><h1>STWF VISUAL LABORATORY <small>v0.7 — auditable state / controlled motion / verification suite</small></h1></header>
 <main>
 <section><canvas id="field" width="960" height="620"></canvas></section>
 <section class="panel">
@@ -132,7 +132,7 @@ function drawState(){
  ctx.fillStyle='#dce7f2';ctx.font='16px system-ui';ctx.fillText('STATEFUL CORE / RESONANT FEEDBACK',18,28);ctx.font='12px monospace';ctx.fillText('t = '+t+'   fieldMemory = '+fmt(fieldMemory),18,48);
  for(let i=0;i<4;i++){const a=start+i*gap,b=a+gap;ctx.strokeStyle='#536777';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(a,y);ctx.lineTo(b,y);ctx.stroke()}
  // Animated transport markers make state-to-state propagation observable instead of drawing five static nodes only.
- const phase=(performance.now()/700)%1;
+ const phase=running?((t/12)%1):0;
  for(let i=0;i<4;i++){
   const px=start+(i+phase)*gap;
   ctx.beginPath();ctx.arc(px,y,5,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();
@@ -141,7 +141,7 @@ function drawState(){
  const fx=W/2,fy=H*.72,fr=25+Math.abs(fieldMemory)*16;
  ctx.beginPath();ctx.arc(fx,fy,fr,0,Math.PI*2);ctx.strokeStyle='#dce7f2';ctx.stroke();ctx.beginPath();ctx.arc(fx,fy,fr*.38,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();
  // Feedback marker: a moving packet from FIELD STATE toward the central node.
- const q=(performance.now()/900)%1, sx=fx, sy=fy, tx=start+2*gap, ty=y;
+ const q=running?((t/16)%1):0, sx=fx, sy=fy, tx=start+2*gap, ty=y;
  const qx=sx+(tx-sx)*q, qy=sy+(ty-sy)*q;
  ctx.beginPath();ctx.arc(qx,qy,5,0,Math.PI*2);ctx.fillStyle='#dce7f2';ctx.fill();
  ctx.fillStyle='#dce7f2';ctx.textAlign='center';ctx.fillText('FIELD STATE '+fmt(fieldMemory),fx,fy+fr+20);ctx.textAlign='left'}
@@ -152,7 +152,7 @@ function labels(){
 }
 function draw(){ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#030609';ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle='#121b23';ctx.lineWidth=1;for(let x=0;x<c.width;x+=48){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke()}for(let y=0;y<c.height;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke()}mode==='wave'?drawWave():drawState();labels()}
 function frame(){if(running)update();draw();requestAnimationFrame(frame)}
-modeWave.onclick=()=>{mode='wave';reset()};modeState.onclick=()=>{mode='state';reset()};run.onclick=()=>running=!running;step.onclick=()=>{update();draw()};reset.onclick=reset;test.onclick=runComputationTest;suite.onclick=runAuditSuite;export.onclick=exportTrace;requestAnimationFrame(frame);
+modeWave.onclick=()=>{mode='wave';reset()};modeState.onclick=()=>{mode='state';reset()};run.onclick=()=>{running=!running;run.textContent=running?'⏸ PAUSE':'▶ RUN';draw()};step.onclick=()=>{if(!running){update();draw()}};reset.onclick=reset;test.onclick=runComputationTest;suite.onclick=runAuditSuite;export.onclick=exportTrace;requestAnimationFrame(frame);
 </script>
 </body>
 </html>
