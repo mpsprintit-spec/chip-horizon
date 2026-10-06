@@ -1,3 +1,13 @@
+## 2026-10-06 — Operational computational data path
+
+- Added `03_ARCHITECTURE/STWF/OPERATIONAL_DATA_PATH_V0_1.md`.
+- Defined the end-to-end path from external data to input interface, space-time encoding, wave generation/transport, WCR computation, nonlinear/state interaction, feedback, readout, and external output.
+- Explicitly separated numerical/system representation from internal physical wave/state representation.
+- Recorded the concrete `5 + 3 = 8` example as a computational contract and teaching case only; it is not a hardware result.
+- Clarified the distinction between wave communication and wave computation.
+- Added the causal requirement that a candidate WCR must show wave input -> physical state change -> retained state -> state-dependent later wave response -> measurable output.
+- Added D-014 to the design-decision record.
+
 ## 2026-10-05 — Physical Stateful Cell
 
 - Physical Stateful Cell Model diperdalam menjadi simulator V0.1 yang memisahkan state decay, physical coupling, wave coupling, delay, loss, noise, read disturbance, reset, dan energy accounting.
