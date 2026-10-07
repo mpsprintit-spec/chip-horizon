@@ -1,3 +1,12 @@
+## 2026-10-07 — WCR candidate causal mapping
+
+- Added `04_RESEARCH/WCR_CANDIDATE_CAUSAL_MAPPING_V0_1.md`.
+- Mapped photonic and magnonic/spin-wave WCR candidates from digital input through physical field evolution, state interaction, readout, and digital output.
+- Defined candidate-specific causal experiments for state preparation, retention, identical later input, and state-dependent output.
+- Compared propagation, interference, state coupling, conversion overhead, loss, integration, and scalability risks.
+- Preserved both candidates as open; no final material platform selected.
+- Defined kill criteria based on measurement uncertainty, state controllability, retention, energy, coupling, variability, and chip-scale integration.
+
 ## 2026-10-07 — Physical mechanism deep map
 
 - Added `01_FOUNDATION/PHYSICAL_MECHANISM_DEEP_MAP_V0_1.md`.
