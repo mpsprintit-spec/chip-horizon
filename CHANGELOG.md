@@ -193,3 +193,15 @@
 - Defined the minimum same-input/different-state A/B causal experiment with randomized state order and total uncertainty.
 - Preserved magnonic WCR as an independent comparison branch.
 - Applied D-012: use existing external measurement infrastructure before designing custom instrumentation.
+
+
+## 2026-10-07 — WCR external collaboration / DUT availability gate v0.9
+
+- Added `04_RESEARCH/WCR_EXTERNAL_COLLABORATION_DUT_AVAILABILITY_GATE_V0_9.md`.
+- Defined the minimum DUT acceptance specification for the first physical WCR causal experiment.
+- Confirmed NUS/SHINE as the primary external collaboration route because the published HZO-LNOI Pockels photonic memory directly exposes persistent optical states, resonance shifts, optical transmission/readout, and electrical state programming.
+- Confirmed that SHINE publicly offers Shared R&D and Dedicated R&D collaboration routes; actual external DUT/sample availability remains unverified.
+- Simplified the first physical causal test to scalar optical transmission/power measurement; phase-sensitive coherent detection is not required for the first gate.
+- Classified the external-access states as ACCESSIBLE NOW, ACCESSIBLE VIA COLLABORATION, CAPABILITY EXISTS / DUT MISSING, or NOT VERIFIED.
+- Preserved the distinction between published device evidence and Horizon physical validation: the latter has not been performed.
+- No user action is required yet. Next operational step is to prepare a narrow external collaboration request and then await/assess the response.
