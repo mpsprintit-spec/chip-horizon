@@ -154,3 +154,14 @@
 - Identified coupled wave-field plus persistent-state regions as the most relevant current research direction, without selecting a final material.
 - Defined the first falsifiable candidate test around distinguishable internal states, controlled state transitions, retention, state-dependent response, repeatability, noise, energy, and latency.
 - Explicitly rejected nominal state count as evidence of computational capacity unless states are physically distinguishable, writable, retainable, transformable, and readable.
+
+
+## 2026-10-07 — Independent WCR operating-envelope sweep v0.5
+
+- Added 04_RESEARCH/INDEPENDENT_WCR_OPERATING_ENVELOPE_SWEEP_V0_5.md.
+- Added 04_RESEARCH/independent_wcr_operating_envelope_sweep_v0_5.py.
+- Swept damping/retention, cross-coupling, nonlinear strength, and state noise across 320 numerical conditions.
+- Found multiple bounded parameter regions where two different internal states remain distinguishable under the exploratory gate.
+- Introduced the Effective Computational State Envelope concept as a bridge between mathematical parameters and experimentally measurable device parameters.
+- Explicitly classified the result as numerical simulation, not physical validation.
+- Next falsification target: map abstract parameters to measurable physical quantities on one candidate WCR platform.
