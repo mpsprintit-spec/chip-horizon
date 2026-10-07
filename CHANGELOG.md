@@ -1,3 +1,13 @@
+## 2026-10-07 — WCR external platform audit v0.7
+
+- Added `04_RESEARCH/WCR_EXTERNAL_PLATFORM_AUDIT_V0_7.md`.
+- Audited three existing photonic platform classes against the minimum Horizon WCR causal experiment: ferroelectric Pockels photonic memory, FLARE fully in-memory photonic computing, and nonlinear multistable photonic microcavity.
+- Promoted the FeFET-Pockels photonic memory platform as the first external measurement candidate because it already exposes controlled multi-state preparation, optical state-dependent response, retention, repeatability, and high-speed photodetection.
+- Retained FLARE as an integration/scaling benchmark and nonlinear multistable microcavity as a nonlinear-dynamics benchmark.
+- Defined the external A/B protocol: prepare S_A and S_B, apply the same later optical probe X, measure Y_A and Y_B, randomize trial order, and require output separation greater than the complete uncertainty budget.
+- Explicitly separated literature-established device behaviour from Horizon mathematical synthesis and from unperformed Horizon physical experiments.
+- Applied D-012: the next step is to identify an existing external device/laboratory measurement path; no custom Horizon instrumentation is proposed.
+
 ## 2026-10-07 — Concrete WCR physical candidates
 
 - Added `03_ARCHITECTURE/STWF/PHOTONIC_WCR_PHYSICAL_CANDIDATE_V0_1.md`.
