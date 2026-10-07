@@ -1,3 +1,17 @@
+## 2026-10-07 — Concrete WCR physical candidates
+
+- Added `03_ARCHITECTURE/STWF/PHOTONIC_WCR_PHYSICAL_CANDIDATE_V0_1.md`.
+- Defined a concrete photonic WCR candidate as a confined optical propagation region coupled to a nonlinear/stateful material or device.
+- Specified the physical moving quantity, candidate state locations, computational feedback loop, causal state-dependent response test, external measurement classes, validation ladder, and kill criteria.
+- Added `03_ARCHITECTURE/STWF/MAGNONIC_WCR_PHYSICAL_CANDIDATE_V0_1.md`.
+- Defined a concrete magnonic WCR candidate as a spin-wave propagation region coupled to a controllable magnetic/spintronic state.
+- Specified amplitude, phase, frequency, timing, spatial mode, and magnetic configuration as candidate rich-state coordinates subject to measurement validation.
+- Added `04_RESEARCH/WCR_CANDIDATE_COMPARISON_GATE_V0_1.md`.
+- Established a common A/B causal experiment: prepare two states, apply the same later input, measure state-dependent outputs, and require output separation greater than the complete uncertainty budget with repeatability.
+- Preserved photonic and magnonic platforms as open candidates; no final physical platform selected.
+- Incorporated recent external evidence as prior art and physical plausibility, without treating it as evidence that Horizon has already achieved the proposed architecture.
+- Reinforced the rule that nominal state count is not computational capacity unless states are distinguishable, writable, retainable, transformable, and readable.
+
 ## 2026-10-07 — WCR candidate causal mapping
 
 - Added `04_RESEARCH/WCR_CANDIDATE_CAUSAL_MAPPING_V0_1.md`.
