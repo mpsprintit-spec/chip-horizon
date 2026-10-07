@@ -165,3 +165,13 @@
 - Introduced the Effective Computational State Envelope concept as a bridge between mathematical parameters and experimentally measurable device parameters.
 - Explicitly classified the result as numerical simulation, not physical validation.
 - Next falsification target: map abstract parameters to measurable physical quantities on one candidate WCR platform.
+
+
+## 2026-10-07 — WCR physical parameter mapping gate v0.6
+
+- Added 04_RESEARCH/WCR_PHYSICAL_PARAMETER_MAPPING_GATE_V0_6.md.
+- Selected photonic WCR as the first parameter-mapping candidate because existing integrated photonic platforms expose optical field, memory, nonlinear response, multi-state behaviour, and readout observables.
+- Mapped abstract WCR parameters to candidate measurable quantities such as Q/ringdown, coupling, resonance shift, coherent phase, transmission, noise, drift, and retention.
+- Defined the minimum same-input/different-state A/B causal experiment with randomized state order and total uncertainty.
+- Preserved magnonic WCR as an independent comparison branch.
+- Applied D-012: use existing external measurement infrastructure before designing custom instrumentation.
