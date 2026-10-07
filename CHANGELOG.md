@@ -101,3 +101,13 @@
 - Changed computation validation to use a fixed reference trajectory and a runtime trace with per-step error, RMS error, and maximum absolute error.
 - Recorded the audit in 04_RESEARCH/WEB_TEST_AUDIT_V0_1.md.
 - Clarified that web PASS verifies the numerical harness only and does not validate physical hardware.
+
+
+## 2026-10-07 — Natural mechanism reconstruction hypothesis
+
+- Added `01_FOUNDATION/NATURAL_MECHANISM_RECONSTRUCTION_HYPOTHESIS_V0_1.md`.
+- Recorded the methodological hypothesis that engineering can discover physical mechanisms already permitted by nature and then engineer them into new architectures, rather than treating current binary computation as the boundary of possible computation.
+- Used the bird-wing analogy to distinguish natural physical mechanism from engineered implementation.
+- Formalized the distinction between creating a physical object, discovering a physical mechanism, and engineering a new architecture.
+- Recorded the binary-interface / rich-internal-state direction as a hypothesis rather than an established result.
+- Added explicit requirements for distinguishability, write/read control, transformation, retention, noise tolerance, programmability, scalability, energy, and latency.
