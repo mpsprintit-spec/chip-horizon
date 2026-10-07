@@ -13,6 +13,7 @@ let recorder = null;
 let audioContext = null;
 let analyser = null;
 let waveFrame = null;
+let snapshotRefresh = Promise.resolve();
 
 const savedBridge = sessionStorage.getItem("horizon.bridge");
 const savedToken = sessionStorage.getItem("horizon.token");
@@ -42,7 +43,10 @@ function binaryToBase64(buffer) { const bytes=new Uint8Array(buffer); let out=""
 function rawPayload(value) { return new TextEncoder().encode(value); }
 async function hashBuffer(buffer) { const hash=await crypto.subtle.digest("SHA-256",buffer); return "sha256:"+Array.from(new Uint8Array(hash)).map(x=>x.toString(16).padStart(2,"0")).join(""); }
 function makeEnvelope(modality, source, payload, extra={}) {
-  return {schema_version:1,brain_identity:"horizon-primary-brain",event_id:nextId(modality),session_id:sessionStorage.getItem("horizon.session")||"browser-"+crypto.randomUUID(),timestamp:new Date().toISOString(),modality,source,provenance:{source,modality,capture_device:extra.capture_device||"",adapter:"github-pages-browser",synthetic:Boolean(extra.synthetic)},payload,...extra.payloadMeta};
+  const sessionId=sessionStorage.getItem("horizon.session")||"browser-"+crypto.randomUUID();
+  sessionStorage.setItem("horizon.session",sessionId);
+  const eventId=nextId(modality);
+  return {schema_version:1,brain_identity:"horizon-primary-brain",event_id:eventId,session_id:sessionId,sequence:sessionSequence,timestamp:new Date().toISOString(),modality,source,provenance:{source,modality,capture_device:extra.capture_device||"",adapter:"github-pages-browser",synthetic:Boolean(extra.synthetic)},payload,...extra.payloadMeta};
 }
 async function sendEnvelope(envelope, uiStatus) {
   try { uiStatus.textContent="captured"; const response=await postObservation(envelope); uiStatus.textContent="acknowledged r"+response.state_revision; }
@@ -53,7 +57,7 @@ function render() {
   $("brain").textContent=s.brain_identity||"unavailable"; $("revision").textContent=String(s.state_revision); $("hash").textContent=s.canonical_state_hash||"unavailable";
   $("units").textContent=String(s.counts?.neural_units??"unavailable"); $("populations").textContent=String(s.counts?.populations??"unavailable"); $("synapses").textContent=String(s.counts?.synapses??"unavailable");
   $("prediction").textContent=JSON.stringify(s.brain_state?.prediction||{},null,2); $("error").textContent=JSON.stringify(s.brain_state?.error||{},null,2); $("memory").textContent=JSON.stringify(s.brain_state?.memory||{},null,2); $("plasticity").textContent=JSON.stringify(s.brain_state?.plasticity||{},null,2); $("curiosity").textContent=JSON.stringify(s.brain_state?.curiosity||{},null,2); $("provenance").textContent=JSON.stringify({provenance:s.provenance||[],episodes:s.episodes||[],bootstrap_experiences:s.bootstrap_experiences||[]},null,2);
-  renderGraph(s); renderEvents();
+  renderGraph(s); renderEvents(); renderInspectableState(s);
 }
 function renderGraph(s) {
   const svg=$("brainGraph"); while(svg.firstChild)svg.removeChild(svg.firstChild);
@@ -67,8 +71,27 @@ function renderGraph(s) {
 }
 function inspect(entity,type){selected=Number(entity.id||entity.node_id||entity.source_id||0);$("inspector").textContent=JSON.stringify({type,entity},null,2);render();}
 function renderEvents(){const root=$("events");root.textContent="";for(const e of [...store.events].reverse()){const div=document.createElement("div");div.className="event";div.textContent=String(e.type)+" revision="+String(e.state_revision)+" timestamp="+String(e.timestamp)+" hash="+String(e.event_hash||"unavailable");root.appendChild(div);}}
+function renderInspectableState(s){
+  const root=$("inspectList"); if(!root)return; root.textContent="";
+  const add=(label,value,type)=>{const button=document.createElement("button");button.className="inspectItem";button.textContent=label;button.onclick=()=>{selected=null;$("inspector").textContent=JSON.stringify({type,value},null,2)};root.appendChild(button);};
+  (s.populations||[]).forEach((value,i)=>add("population "+i,value,"population"));
+  (s.temporal_patterns||[]).forEach((value,i)=>add("temporal trace "+i,value,"temporal_trace"));
+  (s.experience_traces||[]).forEach((value,i)=>add("experience trace "+i,value,"experience_trace"));
+  (s.provenance||[]).forEach((value,i)=>add("provenance "+i,value,"provenance"));
+  add("prediction state",s.brain_state?.prediction||{},"prediction_error");
+  add("plasticity state",s.brain_state?.plasticity||{},"plasticity");
+}
+async function refreshSnapshotForEvent(event){
+  snapshotRefresh=snapshotRefresh.then(async()=>{
+    const snapshot=await get("/v1/brain/snapshot");
+    if(Number(snapshot.state_revision)<Number(event.state_revision))throw new Error("snapshot revision is behind telemetry event");
+    if(Number(snapshot.state_revision)===Number(event.state_revision) && event.canonical_state_hash && snapshot.canonical_state_hash!==event.canonical_state_hash)throw new Error("telemetry canonical hash mismatch");
+    store.setSnapshot(snapshot); render();
+  });
+  return snapshotRefresh;
+}
 async function resync(){store.setStatus("resyncing");try{const s=await get("/v1/brain/snapshot");store.setSnapshot(s);$("streamState").textContent="snapshot resynced";openStream();}catch(error){status("ERROR","error");$("source").textContent=error.message;}}
-function openStream(){if(socket)socket.close();if(!baseUrl())return;store.clearForReconnect();socket=new WebSocket(bridgeWsUrl());socket.onopen=()=>{store.setStatus("connected");$("streamState").textContent="live WebSocket";status("CONNECTED","connected");};socket.onmessage=async event=>{try{const payload=JSON.parse(event.data);if(payload.type==="brain.handshake"){$("commit").textContent=payload.runtime_commit||"unavailable";return;}const result=store.applyEvent(payload);if(result==="gap")await resync();else render();}catch(error){store.setStatus("error");$("streamState").textContent=error.message;}};socket.onerror=()=>{store.setStatus("error");$("streamState").textContent="stream error";};socket.onclose=()=>{if(store.status!=="resyncing"){store.setStatus("stale");$("streamState").textContent="reconnecting";reconnectTimer=setTimeout(openStream,2000);}};}
+function openStream(){if(socket)socket.close();if(!baseUrl())return;store.clearForReconnect();socket=new WebSocket(bridgeWsUrl());socket.onopen=()=>{store.setStatus("connected");$("streamState").textContent="live WebSocket";status("CONNECTED","connected");};socket.onmessage=async event=>{try{const payload=JSON.parse(event.data);if(payload.type==="brain.handshake"){$("commit").textContent=payload.runtime_commit||"unavailable";return;}const result=store.applyEvent(payload);if(result==="gap")await resync();else if(result==="applied")await refreshSnapshotForEvent(payload);else render();}catch(error){store.setStatus("error");$("streamState").textContent=error.message;status("ERROR","error");}};socket.onerror=()=>{store.setStatus("error");$("streamState").textContent="stream error";};socket.onclose=()=>{if(store.status!=="resyncing"){store.setStatus("stale");$("streamState").textContent="reconnecting";reconnectTimer=setTimeout(openStream,2000);}};}
 async function connect(){if(!baseUrl())return;sessionStorage.setItem("horizon.bridge",baseUrl());if($("token").value.trim())sessionStorage.setItem("horizon.token",$("token").value.trim());status("CONNECTING","stale");try{const handshake=await get("/v1/brain/handshake");$("commit").textContent=handshake.runtime_commit||"unavailable";const snapshot=await get("/v1/brain/snapshot");if(handshake.canonical_state_hash!==snapshot.canonical_state_hash||handshake.state_revision!==snapshot.state_revision)throw new Error("handshake/snapshot revision or hash mismatch");store.setSnapshot(snapshot);$("source").textContent="Horizon Bridge canonical runtime";render();openStream();}catch(error){store.setStatus("error");status("ERROR","error");$("source").textContent=error.message;}}
 function disconnect(){if(reconnectTimer)clearTimeout(reconnectTimer);if(socket)socket.close();store.setStatus("disconnected");status("DISCONNECTED","disconnected");}
 $("connect").onclick=connect;$("disconnect").onclick=disconnect;store.subscribe(render);
