@@ -1,3 +1,14 @@
+## 2026-10-07 — Physical mechanism deep map
+
+- Added `01_FOUNDATION/PHYSICAL_MECHANISM_DEEP_MAP_V0_1.md`.
+- Decomposed the proposed WCR into field, interaction, nonlinearity, persistent state, feedback, and readout layers.
+- Mapped photonic, magnonic/spin-wave, and ferroelectric candidate mechanisms to physical entities, state variables, causal paths, strengths, and unresolved integration problems.
+- Formalized the rich-internal-state / binary-I/O architecture as a system-level hypothesis.
+- Defined the decisive physical test as same later input producing different measurable output after preparation of different internal physical states.
+- Mapped required observables to existing external measurement classes, consistent with D-012.
+- Added candidate-selection criteria covering state distinguishability, retention, latency, energy, noise, variability, coupling, density, and end-to-end binary I/O overhead.
+- Preserved epistemic separation between established physics, mathematical deduction, Horizon synthesis, unresolved engineering, and unproven claims.
+
 ## 2026-10-06 — Minimum WCR causal experiment
 
 - Added `04_RESEARCH/MINIMUM_WCR_CAUSAL_EXPERIMENT_V0_1.md`.
