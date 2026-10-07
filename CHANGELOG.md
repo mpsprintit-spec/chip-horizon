@@ -111,3 +111,12 @@
 - Formalized the distinction between creating a physical object, discovering a physical mechanism, and engineering a new architecture.
 - Recorded the binary-interface / rich-internal-state direction as a hypothesis rather than an established result.
 - Added explicit requirements for distinguishability, write/read control, transformation, retention, noise tolerance, programmability, scalability, energy, and latency.
+
+
+## 2026-10-07 — Natural computational mechanism candidate screening
+
+- Added `01_FOUNDATION/NATURAL_COMPUTATIONAL_MECHANISM_CANDIDATE_SCREEN_V0_1.md`.
+- Screened photonic, magnonic/spin-wave, ferroelectric, memristive/oxide, and phononic/acoustic mechanisms against the required Horizon properties.
+- Identified coupled wave-field plus persistent-state regions as the most relevant current research direction, without selecting a final material.
+- Defined the first falsifiable candidate test around distinguishable internal states, controlled state transitions, retention, state-dependent response, repeatability, noise, energy, and latency.
+- Explicitly rejected nominal state count as evidence of computational capacity unless states are physically distinguishable, writable, retainable, transformable, and readable.
