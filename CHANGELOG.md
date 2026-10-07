@@ -1,3 +1,11 @@
+## 2026-10-07 — WCR external access route audit v0.8
+
+- Added `04_RESEARCH/WCR_EXTERNAL_ACCESS_ROUTE_AUDIT_V0_8.md`.
+- Identified NUS/SHINE as the highest-value external route because the demonstrated FeFET-Pockels photonic-memory platform and its characterization ecosystem are directly associated with that research centre.
+- Audited Indonesian fallback measurement routes at ITS and ITB; these provide relevant optical/photonic measurement capabilities but public evidence does not establish access to the exact FeFET-Pockels DUT.
+- Simplified the first physical causal experiment to scalar optical-power readout, avoiding phase-sensitive coherent detection until phase becomes an explicit computational state coordinate.
+- Defined V0.9 as the external collaboration / DUT availability gate.
+
 ## 2026-10-07 — WCR external platform audit v0.7
 
 - Added `04_RESEARCH/WCR_EXTERNAL_PLATFORM_AUDIT_V0_7.md`.
