@@ -88,14 +88,15 @@ function initBrain3D(canvas){
   });
 }
 function matPerspective(fovy,aspect,near,far){const f=1/Math.tan(fovy/2),nf=1/(near-far);return [f/aspect,0,0,0,0,f,0,0,0,0,(far+near)*nf,-1,0,0,2*far*near*nf,0];}
-function matMul(a,b){const o=new Array(16).fill(0);for(let r=0;r<4;r++)for(let c=0;c<4;c++)for(let k=0;k<4;k++)o[r*4+c]+=a[r*4+k]*b[k*4+c];return o;}
+function matMul(a,b){const o=new Array(16).fill(0);for(let col=0;col<4;col++)for(let row=0;row<4;row++)for(let k=0;k<4;k++)o[col*4+row]+=a[k*4+row]*b[col*4+k];return o;}
 function matRot(yaw,pitch){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);return [cy,sy*sp,-sy*cp,0,0,cp,sp,0,sy,-cy*sp,cy*cp,0,0,0,0,1];}
+function matTranslate(z){return [1,0,0,0,0,1,0,0,0,0,1,0,0,0,z,1];}
 function drawBrain3D(s){
   if(!brain3D)return;
   const {gl,canvas}=brain3D,w0=canvas.clientWidth,h0=canvas.clientHeight,dpr=Math.min(2,window.devicePixelRatio||1),w=Math.max(1,Math.floor(w0*dpr)),h=Math.max(1,Math.floor(h0*dpr));
   if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
   gl.viewport(0,0,w,h);gl.clearColor(.018,.035,.04,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
-  const mvp=matMul(matPerspective(1,w/h,.1,100),matRot(brain3D.yaw,brain3D.pitch));
+  const mvp=matMul(matPerspective(1,w/h,.1,100),matMul(matTranslate(-brain3D.zoom),matRot(brain3D.yaw,brain3D.pitch)));
   const units=s.neural_units||[],synapses=s.synapses||[],pops=s.populations||[],byUnit=new Map();
   pops.forEach((p,pi)=>(p.units||[]).forEach(m=>{const id=Number(m.node_id??m.id);if(Number.isFinite(id)&&!byUnit.has(id))byUnit.set(id,pi);}));
   const centers=new Map(),pc=Math.max(1,Math.ceil(pops.length/2));
